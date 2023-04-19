@@ -254,8 +254,8 @@ const SporeTracker = () => {
     <Box className="background">
       <Image src={archivistImage} alt="Archivist" className="archivist-image" position="fixed" bottom="0" left="0" />
       <Heading mb={4}>
-        <Flex justifyContent="space-between" alignItems="center" className="background">
-          <Text>SPORE TRACKER</Text>
+        <Flex justifyContent="space-between" alignItems="center" className="header">
+          <Text>Chronicle of The Spread</Text>
           <InputGroup width="30%" ml={2}>
             <Input
               value={search}
@@ -263,7 +263,7 @@ const SporeTracker = () => {
               onKeyPress={(event) => {
                 if (event.key === "Enter") handleSearch();
               }}
-              placeholder="Search by Token ID"
+              placeholder="Search ID"
               textAlign="center"
             />
             <InputRightElement>
