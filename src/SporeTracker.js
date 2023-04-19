@@ -230,25 +230,29 @@ const SporeTracker = () => {
       </Box>
     );
 
-    const ENSOwner = ({ owner, isSmallScreen }) => {
-      const [displayName, setDisplayName] = useState(null);
+    const ENSOwner = React.memo(
+      ({ owner, isSmallScreen }) => {
+        const [displayName, setDisplayName] = useState(null);
     
-      const ensName = useMemo(async () => {
-        const provider = new providers.InfuraProvider("mainnet", process.env.REACT_APP_INFURA_API_KEY);
-        const ensNameResult = await provider.lookupAddress(owner.id);
-        return ensNameResult;
-      }, [owner.id]);
+        const ensName = useMemo(async () => {
+          const provider = new providers.InfuraProvider("mainnet", process.env.REACT_APP_INFURA_API_KEY);
+          const ensNameResult = await provider.lookupAddress(owner.id);
+          return ensNameResult;
+        }, [owner.id]);
     
-      useEffect(() => {
-        setDisplayName(ensName);
-      }, [ensName]);
+        useEffect(() => {
+          setDisplayName(ensName);
+        }, [ensName]);
     
-      return (
-        <Link href={`http://opensea.io/${owner.id}`}>
-          {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
-        </Link>
-      );
-    };
+        return (
+          <Link href={`http://opensea.io/${owner.id}`}>
+            {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
+          </Link>
+        );
+      },
+      (prevProps, nextProps) => prevProps.owner.id === nextProps.owner.id
+    );
+    
 
 
 
