@@ -235,7 +235,7 @@ const SporeTracker = () => {
 
     // Add this function to get the ENS name using eth-ens-namehash
     const getEnsName = async (address) => {
-      const provider = new providers.InfuraProvider("mainnet", "edd1ef15a39f46a495d9441c6bdb9c45");
+      const provider = new providers.InfuraProvider("mainnet", process.env.REACT_APP_INFURA_API_KEY);
       const ensName = await provider.lookupAddress(address);
       return ensName;
     };
