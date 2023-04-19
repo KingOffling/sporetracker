@@ -12,10 +12,10 @@ import {
   Text,
   Spinner,
   Input,
-  InputGroup,
-  InputRightElement,
-  Button,
+  InputGroup
 } from "@chakra-ui/react";
+import { providers } from 'ethers';
+
 
 
 const infectionsQuery = gql`
@@ -47,6 +47,7 @@ const characterQuery = gql`
     }
   }
 `;
+
 
 const SporeTracker = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
@@ -173,6 +174,31 @@ const SporeTracker = () => {
       </Box>
     );
 
+    const ENSOwner = ({ owner, isSmallScreen }) => {
+      const [displayName, setDisplayName] = useState(null);
+    
+      // Add this function to get the ENS name using eth-ens-namehash
+      const getEnsName = async (address) => {
+        const provider = new providers.InfuraProvider("mainnet", "edd1ef15a39f46a495d9441c6bdb9c45");
+        const ensName = await provider.lookupAddress(address);
+        return ensName;
+      };
+    
+      useEffect(() => {
+        (async () => {
+          const name = await getEnsName(owner.id);
+          setDisplayName(name);
+        })();
+      }, [owner.id, isSmallScreen]);
+    
+      return (
+        <Link href={`http://opensea.io/${owner.id}`}>
+          {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
+        </Link>
+      );
+    };
+    
+    
 
   const CharacterInfo = ({ tokenId }) => {
     const { data: characterData, loading: characterLoading } = useQuery(characterQuery, {
@@ -227,7 +253,7 @@ const SporeTracker = () => {
         <Link href={`http://opensea.io/${owner.id}`}>{characterName ? characterName : "Unknown"}</Link>
         {characterHealth && (
           <>
-          <br />
+            <br />
             <b>Health:</b> {characterHealth}
           </>
         )}
@@ -236,7 +262,7 @@ const SporeTracker = () => {
         {location && location.name !== null ? location.name : "Unknown"}
         <br />
         <b>Owner: </b>
-        <Link href={`http://opensea.io/${owner.id}`}>{isSmallScreen ? abbreviateAddress(owner.id) : owner.id}</Link>
+        <ENSOwner owner={owner} isSmallScreen={isSmallScreen} />
       </>
     );
   };
@@ -268,7 +294,7 @@ const SporeTracker = () => {
       <Image src={archivistImage} alt="Archivist" className="archivist-image" position="fixed" bottom="0" left="0" />
       <Heading mb={4}>
         <Flex justifyContent="space-between" alignItems="center" className="header">
-        <Link onClick={resetState} style={{ textDecoration: 'none' }}><Text>Chronicle of The Spread</Text></Link>
+          <Link onClick={resetState} style={{ textDecoration: 'none' }}><Text>Chronicle of The Spread</Text></Link>
           <InputGroup width="30%" ml={2}>
             <Input
               value={search}
@@ -279,9 +305,6 @@ const SporeTracker = () => {
               placeholder="Search ID"
               textAlign="center"
             />
-            <InputRightElement>
-              <Button onClick={handleSearch}>🔍</Button>
-            </InputRightElement>
           </InputGroup>
         </Flex>
       </Heading>
