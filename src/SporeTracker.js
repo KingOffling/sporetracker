@@ -53,6 +53,11 @@ const SporeTracker = () => {
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState(null);
 
+  const resetState = () => {
+    setSearch('');
+    setFilteredData([]);
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth <= 800);
@@ -263,7 +268,7 @@ const SporeTracker = () => {
       <Image src={archivistImage} alt="Archivist" className="archivist-image" position="fixed" bottom="0" left="0" />
       <Heading mb={4}>
         <Flex justifyContent="space-between" alignItems="center" className="header">
-          <Text>Chronicle of The Spread</Text>
+        <Link onClick={resetState} style={{ textDecoration: 'none' }}><Text>Chronicle of The Spread</Text></Link>
           <InputGroup width="30%" ml={2}>
             <Input
               value={search}
