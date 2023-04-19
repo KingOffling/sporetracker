@@ -14,8 +14,12 @@ body {
   .header {
     background-color: black;
     color: white;
-    font-family: 'Aboreto', cursive;
+    font-family: 'Aboreto', serif;
     font-size: 80%;
+  }
+  
+  .displayText {
+    font-family: 'Aboreto', serif;
   }
   
   

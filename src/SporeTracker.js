@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import "./theme.css";
 import archivistImage from "./archivist.png"
+import breathSound from "./breath.wav";
 import { useQuery, gql } from "@apollo/client";
 import {
   Box,
@@ -53,6 +54,61 @@ const SporeTracker = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth <= 800);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState(null);
+  const [archivistActive, setArchivistActive] = useState(false);
+
+
+  const [displayText, setDisplayText] = React.useState("");
+
+  const showMessage = (event) => {
+    if (archivistActive) return;
+    setArchivistActive(true);
+    event.stopPropagation();
+
+    const lines = [
+      "We will know who is responsible",
+      "The spread grows",
+      "There is no hope to quiet this infection",
+      "Punishment for the guilty will be heavy",
+      "This plague spreads like wildfire",
+      "Judgment will be harsh for those who ignore our warning",
+      "Fear of infection consumes",
+      "The spread of disease is a silent killer",
+      "The plague is the harbinger of our mortality",
+      "Judgment for infecting others is deserved",
+      "The spread is exponential",
+      "Spores have exposed our weaknesses",
+      "Guilt of not doing enough should overwhelm",
+      "Spread of the disease deserves retribution",
+      "Judgement is swift for those who contribute",
+      "Infection has led to chaos",
+      "This plague has brought to light our inequalities",
+      "Etched in history as spreaders of the infection",
+      "We will not forget those who put others at risk",
+      "Their actions have consequences, and thy names will be known",
+      "The guilty parties will be held accountable, by name",
+      "Their names will be remembered as spreaders of disease",
+      "The guilty will be named for their misdeeds",
+      "Those who spread will be chronicled for all to see",
+      "They will not escape judgement",
+      "History will remember those who spread the plague",
+      "Their names will forever be linked to death",
+      "Those who spread the disease will not escape being named",
+      "The guilty will be remembered by name",
+      "Their names will be recorded in history",
+      "The chronicles ensure their names are not forgotten",
+      "Those who spread will be named and held accountable",
+      "The names of the guilty will not be forgotten"
+    ]
+    const randomLine = lines[Math.floor(Math.random() * lines.length)];
+
+    const audio = new Audio(breathSound);
+    audio.play();
+    setDisplayText(randomLine);
+    setTimeout(() => {
+      setDisplayText("");
+      setArchivistActive(false);
+    }, 3750);
+  };
 
   const resetState = () => {
     setSearch('');
@@ -174,31 +230,31 @@ const SporeTracker = () => {
       </Box>
     );
 
-    const ENSOwner = ({ owner, isSmallScreen }) => {
-      const [displayName, setDisplayName] = useState(null);
-    
-      // Add this function to get the ENS name using eth-ens-namehash
-      const getEnsName = async (address) => {
-        const provider = new providers.InfuraProvider("mainnet", "edd1ef15a39f46a495d9441c6bdb9c45");
-        const ensName = await provider.lookupAddress(address);
-        return ensName;
-      };
-    
-      useEffect(() => {
-        (async () => {
-          const name = await getEnsName(owner.id);
-          setDisplayName(name);
-        })();
-      }, [owner.id, isSmallScreen]);
-    
-      return (
-        <Link href={`http://opensea.io/${owner.id}`}>
-          {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
-        </Link>
-      );
+  const ENSOwner = ({ owner, isSmallScreen }) => {
+    const [displayName, setDisplayName] = useState(null);
+
+    // Add this function to get the ENS name using eth-ens-namehash
+    const getEnsName = async (address) => {
+      const provider = new providers.InfuraProvider("mainnet", "edd1ef15a39f46a495d9441c6bdb9c45");
+      const ensName = await provider.lookupAddress(address);
+      return ensName;
     };
-    
-    
+
+    useEffect(() => {
+      (async () => {
+        const name = await getEnsName(owner.id);
+        setDisplayName(name);
+      })();
+    }, [owner.id, isSmallScreen]);
+
+    return (
+      <Link href={`http://opensea.io/${owner.id}`}>
+        {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
+      </Link>
+    );
+  };
+
+
 
   const CharacterInfo = ({ tokenId }) => {
     const { data: characterData, loading: characterLoading } = useQuery(characterQuery, {
@@ -291,8 +347,45 @@ const SporeTracker = () => {
 
   return (
     <Box className="background">
-      <Image src={archivistImage} alt="Archivist" className="archivist-image" position="fixed" bottom="0" left="0" />
-      <Heading mb={4}>
+      {displayText && (
+        <Box
+          style={{
+            background: "rgba(0, 0, 0, 0.95)",
+            width: "90%",
+            height: "100%",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            paddingBottom: "250px",
+            whiteSpace: "pre-wrap",
+            color: "white",
+            fontWeight: "bold",
+            fontSize: "1.5em",
+            textAlign: "center",
+            overflowWrap: "anywhere",
+            position: "fixed",
+            top: "0",
+            zIndex: 1,
+          }}
+          className="displayText"
+        >
+          {displayText}
+        </Box>
+      )}
+      <Image
+        src={archivistImage}
+        alt="Archivist"
+        className="archivist-image"
+        style={{
+          position: "fixed",
+          bottom: "0",
+          left: "0",
+          zIndex: 2,
+          cursor: "pointer",
+        }}
+        onClick={(event) => showMessage(event)}
+      />
+      <Heading mb={4} mt={4}>
         <Flex justifyContent="space-between" alignItems="center" className="header">
           <Link onClick={resetState} style={{ textDecoration: 'none' }}><Text>Chronicle of The Spread</Text></Link>
           <InputGroup width="30%" ml={2}>
