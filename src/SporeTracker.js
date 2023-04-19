@@ -230,29 +230,25 @@ const SporeTracker = () => {
       </Box>
     );
 
-  const ENSOwner = ({ owner, isSmallScreen }) => {
-    const [displayName, setDisplayName] = useState(null);
-
-    // Add this function to get the ENS name using eth-ens-namehash
-    const getEnsName = async (address) => {
-      const provider = new providers.InfuraProvider("mainnet", process.env.REACT_APP_INFURA_API_KEY);
-      const ensName = await provider.lookupAddress(address);
-      return ensName;
+    const ENSOwner = ({ owner, isSmallScreen }) => {
+      const [displayName, setDisplayName] = useState(null);
+    
+      const ensName = useMemo(async () => {
+        const provider = new providers.InfuraProvider("mainnet", process.env.REACT_APP_INFURA_API_KEY);
+        const ensNameResult = await provider.lookupAddress(owner.id);
+        return ensNameResult;
+      }, [owner.id]);
+    
+      useEffect(() => {
+        setDisplayName(ensName);
+      }, [ensName]);
+    
+      return (
+        <Link href={`http://opensea.io/${owner.id}`}>
+          {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
+        </Link>
+      );
     };
-
-    useEffect(() => {
-      (async () => {
-        const name = await getEnsName(owner.id);
-        setDisplayName(name);
-      })();
-    }, [owner.id, isSmallScreen]);
-
-    return (
-      <Link href={`http://opensea.io/${owner.id}`}>
-        {displayName || (isSmallScreen ? abbreviateAddress(owner.id) : owner.id)}
-      </Link>
-    );
-  };
 
 
 
