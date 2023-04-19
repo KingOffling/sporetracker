@@ -1,0 +1,49 @@
+/* theme.css */
+body {
+    background-color: black;
+    color: white;
+  }
+
+  .background {
+    background-color: black;
+    color: white;
+  }
+  
+  .characters {
+    background-color: rgb(175, 167, 145);
+    color: black;
+    padding: 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+  }
+
+  .character-image {
+    border: 2px solid rgb(124, 117, 103);
+    border-radius: 3px;
+  }
+
+  @media (max-width: 1550px) {
+    .archivist-image {
+      width: 20%;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .archivist-image {
+      width: 15%;
+    }
+  }
+
+  @media (max-width: 1010px) {
+    .archivist-image {
+      width: 0%;
+    }
+  }
+  
+  @media (max-width: 800px) {
+    .stack-on-small {
+      flex-direction: column !important;
+      align-items: center;
+    }
+  }
+  
