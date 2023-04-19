@@ -67,6 +67,14 @@ const SporeTracker = () => {
 
   const handleChange = (event) => {
     setSearch(event.target.value);
+    if (data) {
+      const result = data.infections.find(
+        (infection) => infection.infectedToken === event.target.value.trim()
+      );
+      setFilteredData(result ? [result] : []);
+    } else {
+      setFilteredData([]);
+    }
   };
 
   const { loading, data } = useQuery(infectionsQuery);
