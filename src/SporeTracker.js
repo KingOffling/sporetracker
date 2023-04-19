@@ -17,6 +17,7 @@ import {
   Button,
 } from "@chakra-ui/react";
 
+
 const infectionsQuery = gql`
   query GetInfections {
     infections(
@@ -122,22 +123,23 @@ const SporeTracker = () => {
   const abbreviateAddress = (address) => {
     return address.slice(0, 16) + "...";
   };
-  
+
   const InlineImageFallback = ({ search }) => {
     const [src, setSrc] = useState(`https://storage.googleapis.com/seared-wagdie-images/${search}.png`);
-  
+
     useEffect(() => {
-      const img = new Image();
+      const GlobalImage = window.Image;
+      const img = new GlobalImage();
       img.src = src;
-      
+
       img.onload = () => { /* Image loaded successfully */ };
       img.onerror = () => {
         setSrc(`https://storage.googleapis.com/wagdie-images/${search}.png`);
       };
-    }, [search]);
-  
+    }, [search, src]);
+
     return (
-      <img src={src} alt="" />
+      <img src={src} alt="Not Infected" width="200px" mr={4} className="character-image" />
     );
   };
 
@@ -157,45 +159,75 @@ const SporeTracker = () => {
         <Spinner size="xl" />
       </Box>
     );
-    
 
-    const CharacterInfo = ({ tokenId }) => {
-      const { data: characterData, loading: characterLoading } = useQuery(characterQuery, {
-        variables: { id: tokenId },
-      });
-    
-      const [characterName, setCharacterName] = useState("");
-    
-      useEffect(() => {
-        async function fetchCharacterName() {
-          try {
-            const response = await fetch(`https://fateofwagdie.com/api/characters/${tokenId}`);
-            const data = await response.json();
-            setCharacterName(data.sheet.name !== "New Character" ? data.sheet.name : "Unknown");
-          } catch (error) {
-            console.error("Error fetching character name:", error);
+
+  const CharacterInfo = ({ tokenId }) => {
+    const { data: characterData, loading: characterLoading } = useQuery(characterQuery, {
+      variables: { id: tokenId },
+    });
+
+    const [characterName, setCharacterName] = useState("");
+    const [characterHealth, setCharacterHealth] = useState(null);
+
+    useEffect(() => {
+      async function fetchCharacterData() {
+        try {
+          const response = await fetch(`https://fateofwagdie.com/api/characters/${tokenId}`);
+          const data = await response.json();
+          setCharacterName(data.sheet.name !== "New Character" ? data.sheet.name : "Unknown");
+          const healthAttribute = data.rawMetadata.attributes.find(attribute => attribute.trait_type === "Health");
+          if (healthAttribute && (healthAttribute.value === "Alive" || healthAttribute.value === "Dead")) {
+            setCharacterHealth(healthAttribute.value);
           }
+        } catch (error) {
+          console.error("Error fetching character data:", error);
         }
-    
-        fetchCharacterName();
-      }, [tokenId]);
-    
-      if (characterLoading) return <Text>Loading...</Text>;
-    
-      const { location, owner } = characterData.character;
+      }
+
+      fetchCharacterData();
+    }, [tokenId]);
+
+    if (characterLoading) return <Text>Loading...</Text>;
+
+    if (!characterData.character) {
       return (
         <>
-          <b>Name: </b>
-          <Link href={`http://opensea.io/${owner.id}`}>{characterName ? characterName : "Unknown"}</Link>
+          <b>Name: </b> Not Found
           <br />
-          <b>Current Location: </b>
-          {location && location.name !== null ? location.name : "Unknown"}
+          <b>Current Location: </b>Unknown
           <br />
-          <b>Owner: </b>
-          <Link href={`http://opensea.io/${owner.id}`}>{isSmallScreen ? abbreviateAddress(owner.id) : owner.id}</Link>
+          <b>Owner: </b>Unknown
+          {characterHealth && (
+            <>
+              <br />
+              <b>Health: </b>{characterHealth}
+            </>
+          )}
         </>
       );
-    };
+    }
+
+    const { location, owner } = characterData.character;
+    return (
+      <>
+        <b>Name: </b>
+        <Link href={`http://opensea.io/${owner.id}`}>{characterName ? characterName : "Unknown"}</Link>
+        {characterHealth && (
+          <>
+          <br />
+            <b>Health:</b> {characterHealth}
+          </>
+        )}
+        <br />
+        <b>Current Location: </b>
+        {location && location.name !== null ? location.name : "Unknown"}
+        <br />
+        <b>Owner: </b>
+        <Link href={`http://opensea.io/${owner.id}`}>{isSmallScreen ? abbreviateAddress(owner.id) : owner.id}</Link>
+      </>
+    );
+  };
+
 
   const formatDate = (timestamp) => {
     const date = new Date(timestamp * 1000);
@@ -220,7 +252,7 @@ const SporeTracker = () => {
 
   return (
     <Box className="background">
-    <Image src={archivistImage} alt="Archivist" className="archivist-image" position="fixed" bottom="0" left="0" />
+      <Image src={archivistImage} alt="Archivist" className="archivist-image" position="fixed" bottom="0" left="0" />
       <Heading mb={4}>
         <Flex justifyContent="space-between" alignItems="center" className="background">
           <Text>SPORE TRACKER</Text>
@@ -240,25 +272,23 @@ const SporeTracker = () => {
           </InputGroup>
         </Flex>
       </Heading>
-      {filteredData !== null && filteredData.length === 0 && (
+      {search !== "" && filteredData !== null && filteredData.length === 0 && (
         <Box p={4} boxShadow="md" borderRadius="md" className="databox">
-            <Flex className="characters stack-on-small">
-            <Text>{`${search} is currently not infected`}</Text>
-             <br/>
-              <Link
-                href={`http://fateofwagdie.com/characters/${search}`}
-              >
-                <InlineImageFallback search={search} />
-              </Link>
-              <Box>
-                <b>Token ID: </b>
-                <Link href={`http://fateofwagdie.com/characters/${search}`}>{`${search}`}</Link>
-                <br />
-                <CharacterInfo tokenId={search} />
-                
-              </Box>
-            </Flex>
-          </Box>
+          <Flex className="characters stack-on-small">
+            <Link
+              href={`http://fateofwagdie.com/characters/${search}`}
+            >
+              <InlineImageFallback search={search} />
+            </Link>
+            <Box pl={4}>
+              <b>Token ID: </b>
+              <Link href={`http://fateofwagdie.com/characters/${search}`}>{`${search}`}</Link>
+              <br />
+              <CharacterInfo tokenId={search} />
+
+            </Box>
+          </Flex>
+        </Box>
       )}
       <Stack spacing={-8} width={boxwidth}>
         {displayedData.map(({ infectedToken, sender, timestamp }) => (
@@ -284,20 +314,19 @@ const SporeTracker = () => {
                 <b>Infector: </b><Link href={`http://opensea.io/${sender.id}`}>{isSmallScreen ? abbreviateAddress(sender.id) : sender.id}</Link> <br />
                 <b>Infection Date: </b>{`${formatDate(timestamp)}`}<br />
                 <b>Infection Time: </b>{`${formatTime(timestamp)}`}<br />
-                
+
               </Box>
             </Flex>
           </Box>
         ))}
       </Stack>
       {filteredData !== null && (
-                <Box display="flex" justifyContent="center" mt={4} mb={4}>
-                <Link onClick={resetSearch}>Show all infections</Link>
-              </Box>
-            )}
-          </Box>
-        );
-      };
-      
-      export default SporeTracker;
-      
+        <Box display="flex" justifyContent="center" mt={4} mb={4}>
+          <Link onClick={resetSearch}>Show all infections</Link>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default SporeTracker;
