@@ -347,7 +347,7 @@ const SporeTracker = () => {
                 <CharacterInfo tokenId={infectedToken} />
                 <br />
                 <br />
-                <b>Infector: </b><Link href={`http://opensea.io/${sender.id}`}>{isSmallScreen ? abbreviateAddress(sender.id) : sender.id}</Link> <br />
+                <b>Infector: </b><ENSOwner owner={sender} isSmallScreen={isSmallScreen} /><br />
                 <b>Infection Date: </b>{`${formatDate(timestamp)}`}<br />
                 <b>Infection Time: </b>{`${formatTime(timestamp)}`}<br />
 
