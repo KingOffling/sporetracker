@@ -24,6 +24,7 @@ const infectionsQuery = gql`
     infections(
       orderBy: timestamp
       orderDirection: desc
+      first: 1000
       where: {infectedToken_not_in: ["1218", "375"] }
     ) {
       infectedToken
@@ -60,6 +61,7 @@ const SporeTracker = () => {
   const [displayText, setDisplayText] = React.useState("");
 
   const showMessage = (event) => {
+    event.preventDefault();
     if (archivistActive) return;
     setArchivistActive(true);
     event.stopPropagation();
@@ -139,7 +141,16 @@ const SporeTracker = () => {
     }
   };
 
-  const { loading, data } = useQuery(infectionsQuery);
+  const { loading, data, refetch } = useQuery(infectionsQuery, {
+    fetchPolicy: "cache-first",
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   const handleSearch = () => {
     if (data) {
